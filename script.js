@@ -9,7 +9,8 @@ new Vue({
   data () {
     return {
       // content: 'This is a note',
-      content: localStorage.getItem('content') || 'You can write in **markdown**',
+      notes: JSON.parse(localStorage.getItem('notes')) || [],
+      selectedId: localStorage.getItem('selected-id') || null
     }
   },
 
@@ -17,44 +18,88 @@ new Vue({
   computed: {
     notePreview () {
       // Markdown rendered to HTML
-      return marked(this.content)
+      return marked.parse(this.selectedNote ? this.selectedNote.content : '')
     },
+    addButtonTitle () {
+      return this.notes.length + ' note(s) already'
+    },
+    selectedNote () {
+      return this.notes.find( note => note.id === this.selectedId)
+    },
+    sortedNotes () {
+      return this.notes.slice()
+          .sort((a, b) => a.created - b.created)
+          .sort((a, b) => {
+            return (a.favorite === b.favorite) ? 0 : a.favorite ? -1 : 1
+          })
+    },
+    linesCount () {
+      if (this.selectedNote) {
+        return this.selectedNote.content.split(/\r\n|\r|\n/).length
+      }
+    },
+    wordsCount () {
+      if (this.selectedNote) {
+        let s = this.selectedNote.content
+        s = s.replace(/\n/g,' ')
+        s = s.replace(/(^\s*)|(\s*$)/gi,'')
+        s = s.replace(/\s\s+/gi,' ')
+        return s.split(' ').length
+      }
+    },
+    charactersCount () {
+      if (this.selectedNote) {
+        return this.selectedNote.content.split('').length
+      }
+    }
   },
 
   // Change watchers
   watch: {
-    /*content: {
-      handler (val, oldVal) {
-        console.log('new note:', val, 'old note:', oldVal)
-        localStorage.setItem('content', val)
-      },
-      immediate: true,
-    },*/
-
-    /*content (val) {
-      localStorage.setItem('content', val)
-    },*/
-
-    /*content: {
-      handler: 'saveNote',
-    },*/
-
-    content: 'saveNote',
+    notes: {
+      handler: 'saveNotes',
+      deep: true
+    },
+    selectedId (val) {
+      localStorage.setItem('selected-id',val)
+    }
   },
 
   methods: {
-    saveNote (val, oldVal) {
-      console.log('new note:', val, 'old note:', oldVal)
-      console.log('saving note:', this.content)
-      localStorage.setItem('content', this.content)
-      this.reportOperation('saving')
+    addNote () {
+      const time = Date.now()
+      const note = {
+        id: String(time),
+        title: 'New note' + (this.notes.length + 1),
+        content: '**hi**',
+        created: time,
+        favorite: false
+      }
+      this.notes.push(note)
     },
-    reportOperation (opName) {
-      console.log('The', opName, 'operation was completed!')
+    selectNote (note) {
+        this.selectedId = note.id
     },
+    saveNotes () {
+      // 在不同会话之间同步笔记
+      localStorage.setItem('notes',JSON.stringify(this.notes))
+    },
+    removeNote () {
+      if(this.selectedNote && confirm('确定要删除吗？')) {
+        const index = this.notes.indexOf(this.selectedNote)
+        if (index !== -1) {
+          this.notes.splice(index,1)
+        }
+      }
+    },
+    favoriteNote () {
+      this.selectedNote.favorite ^= true
+    }
   },
 
-  /* created () {
-    this.content = localStorage.getItem('content') || 'You can write in **markdown**'
-  }, */
+  filters: {
+    date: function (time) {
+      return moment(time).format('DD/MM/YY, HH:m')
+    }
+  }
 })

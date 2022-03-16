@@ -7,24 +7,71 @@
 </head>
 <body>
   <!-- Include the library in the page -->
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  <script src="https://unpkg.com/marked"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="http://cdn.staticfile.org/moment.js/2.24.0/moment.js"></script>
 
   <!-- Notebook app -->
   <div id="notebook">
-
-    <!-- Main pane -->
-    <section class="main">
-      <textarea v-model="content"></textarea>
-    </section>
-
-    <!-- Preview pane -->
-    <aside class="preview" v-html="notePreview">
+    <!--  aside pane  -->
+    <aside class="side-bar">
+      <!-- add note button -->
+      <div class="toolbar">
+        <button
+        @click="addNote"
+        :title="addButtonTitle"
+        ><i class="material-icons">add</i>Add note</button>
+      </div>
+      <!-- note list -->
+      <div class="notes">
+        <div v-for="note of sortedNotes" class="note"
+           @click="selectNote(note)"
+           :key="note.id"
+           :class="{selected: note === selectedNote}"
+        >{{ note.title }}</div>
+      </div>
     </aside>
 
+    <!-- Main pane -->
+    <template v-if="selectedNote">
+      <!-- text pane -->
+      <section class="main">
+        <div class="toolbar">
+          <!-- new tools here -->
+          <input type="text" v-model="selectedNote.title" placeholder="Note Title">
+          <button @click="favoriteNote" title="Favorite note">
+            <i class="material-icons">{{ selectedNote.favorite ? 'star' : 'star_border' }}</i>
+          </button>
+          <button @click="removeNote" title="Remove note"><i class="material-icons">delete</i></button>
+        </div>
+        <textarea v-model="selectedNote.content"></textarea>
+        <div class="status-bar">
+          <span class="date">
+          <span class="label">Created</span>
+          <span class="value">{{ selectedNote.created | date }}</span>
+        </span>
+          <span class="lines">
+          <span class="label">Lines</span>
+          <span class="value">{{ linesCount }}</span>
+        </span>
+          <span class="words">
+          <span class="label">Words</span>
+          <span class="value">{{ wordsCount }}</span>
+        </span>
+          <span class="charactors">
+          <span class="label">Charactors</span>
+          <span class="value">{{ charactersCount }}</span>
+        </span>
+        </div>
+      </section>
+
+      <!-- Preview pane -->
+      <aside class="preview" v-html="notePreview">
+      </aside>
+    </template>
   </div>
 
   <!-- Some JavaScript -->
-  <script src="script.js"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
