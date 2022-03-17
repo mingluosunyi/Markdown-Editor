@@ -78,7 +78,7 @@ new Vue({
       this.notes.push(note)
     },
     selectNote (note) {
-        this.selectedId = note.id
+        this.selectedId =  (this.selectedId === note.id) ? null : note.id
     },
     saveNotes () {
       // 在不同会话之间同步笔记

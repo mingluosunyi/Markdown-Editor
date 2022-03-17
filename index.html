@@ -33,7 +33,7 @@
     </aside>
 
     <!-- Main pane -->
-    <template v-if="selectedNote">
+    <template v-if="selectedId">
       <!-- text pane -->
       <section class="main">
         <div class="toolbar">
@@ -48,7 +48,7 @@
         <div class="status-bar">
           <span class="date">
           <span class="label">Created</span>
-          <span class="value">{{ selectedNote.created | date }}</span>
+          <span class="value">{{ selectedNote.created | date}}</span>
         </span>
           <span class="lines">
           <span class="label">Lines</span>
